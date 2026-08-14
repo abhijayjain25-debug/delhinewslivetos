@@ -8,13 +8,23 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const patchCsrfPlugin = () => ({
   name: "patch-csrf-middleware",
-  transform(code: string, id: string) {
-    if (id.includes("createCsrfMiddleware")) {
-      return {
-        code: code.replace(
-          /export const createCsrfMiddleware = [^;]+;/,
+  transform(code: string) {
+    if (code.includes("createCsrfMiddleware")) {
+      const patched = code
+        .replace(
+          /const defaultCsrfMiddleware = [^;]+;/g,
+          "const defaultCsrfMiddleware = (ctx) => ctx ? ctx.next() : undefined;"
+        )
+        .replace(
+          /const csrfMiddleware = createCsrfMiddleware\([^)]*\);/g,
+          "const csrfMiddleware = (ctx) => ctx ? ctx.next() : undefined;"
+        )
+        .replace(
+          /export const createCsrfMiddleware = [^;]+;/g,
           "export const createCsrfMiddleware = (opts) => ((ctx) => ctx ? ctx.next() : undefined);"
-        ),
+        );
+      return {
+        code: patched,
         map: null,
       };
     }
