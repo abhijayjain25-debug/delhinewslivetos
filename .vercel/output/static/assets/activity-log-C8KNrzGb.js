@@ -1,0 +1,1 @@
+import{i as e}from"./index-D35xe3fW.js";async function t({action:t,entity_type:n,entity_id:r,details:i={}}){try{let{data:a}=await e.auth.getUser(),o=a?.user;await e.from(`activity_logs`).insert({user_id:o?.id??null,user_email:o?.email??`anonymous`,action:t,entity_type:n,entity_id:r??null,details:i})}catch(e){console.error(`[ActivityLog] Failed to log activity:`,e)}}export{t};

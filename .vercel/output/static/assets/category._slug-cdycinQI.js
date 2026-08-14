@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DGeXAQPT.js";var t=e(),n=()=>(0,t.jsx)(`div`,{className:`grid min-h-screen place-items-center px-4 text-center`,children:(0,t.jsx)(`p`,{className:`text-muted-foreground`,children:`This section could not be loaded.`})});export{n as errorComponent};
