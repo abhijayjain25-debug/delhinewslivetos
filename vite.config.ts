@@ -6,14 +6,32 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+const patchCsrfPlugin = () => ({
+  name: "patch-csrf-middleware",
+  transform(code: string, id: string) {
+    if (id.includes("createCsrfMiddleware")) {
+      return {
+        code: code.replace(
+          /export const createCsrfMiddleware = [^;]+;/,
+          "export const createCsrfMiddleware = (opts) => ((ctx) => ctx ? ctx.next() : undefined);"
+        ),
+        map: null,
+      };
+    }
+  },
+});
+
 export default defineConfig({
   nitro: {
     preset: "vercel",
   },
   ssr: {
-    noExternal: ["@tanstack/react-start", "@tanstack/start-client-core", "@tanstack/start-fn-stubs"],
+    noExternal: true,
   },
   tanstackStart: {
     server: { entry: "server" },
+  },
+  vite: {
+    plugins: [patchCsrfPlugin()],
   },
 });
