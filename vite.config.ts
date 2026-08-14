@@ -10,6 +10,9 @@ export default defineConfig({
   nitro: {
     preset: "vercel",
   },
+  ssr: {
+    noExternal: ["@tanstack/react-start", "@tanstack/start-client-core", "@tanstack/start-fn-stubs"],
+  },
   tanstackStart: {
     server: { entry: "server" },
   },
