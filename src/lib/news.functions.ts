@@ -16,11 +16,8 @@ function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
 
   if (!url || !key) {
-    const missing = [
-      ...(!url ? ["SUPABASE_URL / VITE_SUPABASE_URL"] : []),
-      ...(!key ? ["SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_PUBLISHABLE_KEY"] : []),
-    ];
-    throw new Error(`Missing Supabase environment variable(s): ${missing.join(", ")}`);
+    console.warn("[Supabase] Missing SUPABASE_URL / VITE_SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_PUBLISHABLE_KEY in environment variables.");
+    return null;
   }
 
   return createClient<Database>(
@@ -35,76 +32,109 @@ const ARTICLE_SELECT =
 
 export const getHomeData = createServerFn({ method: "GET" }).handler(async () => {
   const sb = publicClient();
-  const [articles, categories, ticker, settings] = await Promise.all([
-    sb
-      .from("articles")
-      .select(ARTICLE_SELECT)
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(60),
-    sb.from("categories").select("*").eq("is_visible", true).order("sort_order"),
-    sb.from("ticker_items").select("*").eq("is_active", true).order("sort_order"),
-    sb.from("site_settings").select("*").eq("id", 1).maybeSingle(),
-  ]);
+  if (!sb) {
+    return {
+      articles: [] as Article[],
+      categories: [] as Category[],
+      ticker: [] as TickerItem[],
+      settings: null as SiteSettings | null,
+    };
+  }
 
-  return {
-    articles: (articles.data ?? []) as unknown as Article[],
-    categories: (categories.data ?? []) as Category[],
-    ticker: (ticker.data ?? []) as TickerItem[],
-    settings: (settings.data ?? null) as SiteSettings | null,
-  };
+  try {
+    const [articles, categories, ticker, settings] = await Promise.all([
+      sb
+        .from("articles")
+        .select(ARTICLE_SELECT)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(60),
+      sb.from("categories").select("*").eq("is_visible", true).order("sort_order"),
+      sb.from("ticker_items").select("*").eq("is_active", true).order("sort_order"),
+      sb.from("site_settings").select("*").eq("id", 1).maybeSingle(),
+    ]);
+
+    return {
+      articles: (articles.data ?? []) as unknown as Article[],
+      categories: (categories.data ?? []) as Category[],
+      ticker: (ticker.data ?? []) as TickerItem[],
+      settings: (settings.data ?? null) as SiteSettings | null,
+    };
+  } catch (err) {
+    console.error("[getHomeData] Error loading home data:", err);
+    return {
+      articles: [] as Article[],
+      categories: [] as Category[],
+      ticker: [] as TickerItem[],
+      settings: null as SiteSettings | null,
+    };
+  }
 });
 
 export const getArticleBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string() }).parse(d))
   .handler(async ({ data }) => {
     const sb = publicClient();
-    const { data: article } = await sb
-      .from("articles")
-      .select(ARTICLE_SELECT)
-      .eq("slug", data.slug)
-      .eq("status", "published")
-      .maybeSingle();
+    if (!sb) return { article: null, related: [] as Article[] };
 
-    if (!article) return { article: null, related: [] as Article[] };
+    try {
+      const { data: article } = await sb
+        .from("articles")
+        .select(ARTICLE_SELECT)
+        .eq("slug", data.slug)
+        .eq("status", "published")
+        .maybeSingle();
 
-    const { data: related } = await sb
-      .from("articles")
-      .select(ARTICLE_SELECT)
-      .eq("status", "published")
-      .eq("category_id", (article as unknown as Article).category_id ?? "")
-      .neq("id", (article as unknown as Article).id)
-      .order("published_at", { ascending: false })
-      .limit(6);
+      if (!article) return { article: null, related: [] as Article[] };
 
-    return {
-      article: article as unknown as Article,
-      related: (related ?? []) as unknown as Article[],
-    };
+      const { data: related } = await sb
+        .from("articles")
+        .select(ARTICLE_SELECT)
+        .eq("status", "published")
+        .eq("category_id", (article as unknown as Article).category_id ?? "")
+        .neq("id", (article as unknown as Article).id)
+        .order("published_at", { ascending: false })
+        .limit(6);
+
+      return {
+        article: article as unknown as Article,
+        related: (related ?? []) as unknown as Article[],
+      };
+    } catch (err) {
+      console.error("[getArticleBySlug] Error:", err);
+      return { article: null, related: [] as Article[] };
+    }
   });
 
 export const getCategoryPage = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string() }).parse(d))
   .handler(async ({ data }) => {
     const sb = publicClient();
-    const { data: category } = await sb
-      .from("categories")
-      .select("*")
-      .eq("slug", data.slug)
-      .maybeSingle();
+    if (!sb) return { category: null, articles: [] as Article[] };
 
-    if (!category) return { category: null, articles: [] as Article[] };
+    try {
+      const { data: category } = await sb
+        .from("categories")
+        .select("*")
+        .eq("slug", data.slug)
+        .maybeSingle();
 
-    const { data: articles } = await sb
-      .from("articles")
-      .select(ARTICLE_SELECT)
-      .eq("status", "published")
-      .eq("category_id", category.id)
-      .order("published_at", { ascending: false })
-      .limit(40);
+      if (!category) return { category: null, articles: [] as Article[] };
 
-    return {
-      category: category as Category,
-      articles: (articles ?? []) as unknown as Article[],
-    };
+      const { data: articles } = await sb
+        .from("articles")
+        .select(ARTICLE_SELECT)
+        .eq("status", "published")
+        .eq("category_id", category.id)
+        .order("published_at", { ascending: false })
+        .limit(40);
+
+      return {
+        category: category as Category,
+        articles: (articles ?? []) as unknown as Article[],
+      };
+    } catch (err) {
+      console.error("[getCategoryPage] Error:", err);
+      return { category: null, articles: [] as Article[] };
+    }
   });
