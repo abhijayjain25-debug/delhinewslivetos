@@ -44,18 +44,19 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
-    try {
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
-    } catch (error) {
-      console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
-  },
+const handler = async (request: Request, env?: unknown, ctx?: unknown) => {
+  try {
+    const entry = await getServerEntry();
+    const fetchFn = typeof entry === "function" ? entry : (entry as any).fetch || (entry as any).default || entry;
+    const response = await fetchFn(request, env, ctx);
+    return await normalizeCatastrophicSsrResponse(response);
+  } catch (error) {
+    console.error("[SSR Fetch Error]", error);
+    return new Response(renderErrorPage(), {
+      status: 500,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
 };
+
+export default Object.assign(handler, { fetch: handler });
