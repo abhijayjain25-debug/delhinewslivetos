@@ -70,16 +70,16 @@ export function SiteHeader({
   return (
     <>
       {/* Top Utility Bar */}
-      <div className="border-b border-border/60 bg-secondary/40 text-xs font-sans text-muted-foreground">
+      <div className="border-b border-border/70 bg-secondary/50 text-xs font-sans text-muted-foreground">
         <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 font-medium text-foreground/80">
+          <div className="flex items-center gap-3.5">
+            <span className="flex items-center gap-1.5 font-semibold text-foreground/90 text-[11px]">
               <Calendar className="h-3.5 w-3.5 text-crimson" />
               {formattedDate}
             </span>
-            <span className="hidden sm:inline-block text-border">•</span>
-            <span className="hidden sm:flex items-center gap-1 font-semibold uppercase tracking-wider text-muted-foreground text-[10px]">
-              <CloudSun className="h-3.5 w-3.5 text-gold" />
+            <span className="hidden sm:inline-block text-border/80">•</span>
+            <span className="hidden sm:flex items-center gap-1 font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+              <CloudSun className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
               Delhi NCR Edition
             </span>
           </div>
@@ -88,19 +88,19 @@ export function SiteHeader({
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-1.5 hover:text-crimson transition-colors"
+              className="flex items-center gap-1.5 font-semibold text-foreground/80 hover:text-crimson transition-colors"
             >
               <Search className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Search</span>
+              <span className="hidden sm:inline">Search News</span>
             </button>
-            <span className="text-border">•</span>
+            <span className="text-border/80">•</span>
             <ThemeToggle />
-            <span className="text-border">•</span>
+            <span className="text-border/80">•</span>
             <Link
               to="/admin"
-              className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-crimson transition-colors"
+              className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-crimson transition-colors"
             >
-              <Shield className="h-3 w-3" />
+              <Shield className="h-3 w-3 text-crimson" />
               Newsroom Admin
             </Link>
           </div>
@@ -109,11 +109,11 @@ export function SiteHeader({
 
       {/* Main Header Masthead */}
       <header className="relative bg-background border-b border-border">
-        <div className="mx-auto max-w-[1400px] px-4 py-4 md:py-6 flex items-center justify-between">
+        <div className="mx-auto max-w-[1400px] px-4 py-4 md:py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="grid h-9 w-9 place-items-center rounded-md border text-muted-foreground hover:bg-accent hover:text-foreground lg:hidden"
+              className="grid h-9 w-9 place-items-center rounded border border-border text-muted-foreground hover:bg-accent hover:text-foreground lg:hidden"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Open menu"
             >
@@ -122,10 +122,11 @@ export function SiteHeader({
             <Masthead logoUrl={logoUrl} compact={false} />
           </div>
 
+          {/* Quick Newsroom Indicators */}
           <div className="hidden md:flex items-center gap-6 text-right">
             <div className="border-r border-border/80 pr-6">
               <p className="meta text-crimson">Live Weather</p>
-              <p className="font-serif text-sm font-bold">31°C · Haze</p>
+              <p className="font-serif text-sm font-bold text-foreground">31°C · Haze</p>
             </div>
             <div>
               <p className="meta text-crimson">Delhi AQI</p>
@@ -137,23 +138,23 @@ export function SiteHeader({
         {/* Primary Sticky Category Navigation */}
         <div
           className={cn(
-            "sticky top-0 z-40 border-t border-b border-border/80 bg-background/95 backdrop-blur transition-all duration-300",
-            scrolled ? "shadow-sm py-1.5" : "py-2.5",
+            "sticky top-0 z-40 border-t-2 border-b border-foreground/90 bg-background/98 backdrop-blur transition-all duration-200",
+            scrolled ? "shadow-md py-1" : "py-1.5",
           )}
         >
           <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 overflow-x-auto [scrollbar-width:none]">
-            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-1 shrink-0">
               <Link
                 to="/"
                 activeOptions={{ exact: true }}
                 className={cn(
-                  "px-3 py-1.5 text-xs md:text-sm font-semibold transition-colors rounded-md",
+                  "px-3 py-1.5 text-xs md:text-sm font-bold tracking-tight transition-colors uppercase",
                   location.pathname === "/"
                     ? "bg-crimson text-crimson-foreground"
-                    : "text-foreground/80 hover:bg-accent hover:text-crimson",
+                    : "text-foreground/90 hover:bg-muted hover:text-crimson",
                 )}
               >
-                Home
+                Front Page
               </Link>
               {primary.map((c) => {
                 const isActive = location.pathname === `/category/${c.slug}`;
@@ -163,10 +164,10 @@ export function SiteHeader({
                     to="/category/$slug"
                     params={{ slug: c.slug }}
                     className={cn(
-                      "px-3 py-1.5 text-xs md:text-sm font-semibold transition-colors rounded-md whitespace-nowrap",
+                      "px-3 py-1.5 text-xs md:text-sm font-bold tracking-tight transition-colors whitespace-nowrap uppercase",
                       isActive
                         ? "bg-crimson text-crimson-foreground"
-                        : "text-foreground/80 hover:bg-accent hover:text-crimson",
+                        : "text-foreground/80 hover:bg-muted hover:text-crimson",
                     )}
                   >
                     {c.name}
@@ -175,16 +176,16 @@ export function SiteHeader({
               })}
               {more.length > 0 && (
                 <div className="group relative">
-                  <button className="px-3 py-1.5 text-xs md:text-sm font-semibold text-foreground/80 hover:text-crimson">
-                    More ▾
+                  <button className="px-3 py-1.5 text-xs md:text-sm font-bold uppercase tracking-tight text-foreground/80 hover:text-crimson">
+                    More Sections ▾
                   </button>
-                  <div className="invisible absolute left-0 top-full w-48 translate-y-1 rounded-md border bg-popover p-1.5 opacity-0 shadow-float transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 z-50">
+                  <div className="invisible absolute left-0 top-full w-52 translate-y-1 border-2 border-border bg-popover p-1.5 shadow-float transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 z-50">
                     {more.map((c) => (
                       <Link
                         key={c.id}
                         to="/category/$slug"
                         params={{ slug: c.slug }}
-                        className="block rounded-md px-3 py-2 text-xs font-semibold text-foreground/80 hover:bg-accent"
+                        className="block px-3 py-2 text-xs font-bold uppercase tracking-wider text-foreground/80 hover:bg-muted hover:text-crimson"
                       >
                         {c.name}
                       </Link>
@@ -197,7 +198,7 @@ export function SiteHeader({
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="ml-4 shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="ml-3 shrink-0 rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Search articles"
             >
               <Search className="h-4 w-4" />
