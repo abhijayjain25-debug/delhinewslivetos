@@ -8,7 +8,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   nitro: {
-    preset: process.env.VERCEL ? "vercel" : undefined,
+    preset: process.env.VERCEL || process.env.NODE_ENV === "production" ? "vercel" : undefined,
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
